@@ -80,7 +80,6 @@ func (h *Handler) HandleInsertOne(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
-
 		return
 	}
 
@@ -91,7 +90,22 @@ func (h *Handler) HandleInsertOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i, err := insertOneItem(r.Context(), h.db, vars["namespace"], string(body))
+	bodyJson := make(map[string]any)
+	err = json.Unmarshal(body, &bodyJson)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.WithContext(r.Context()).Error(err)
+		return
+	}
+
+	bodyClean, err := json.Marshal(bodyJson)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.WithContext(r.Context()).Error(err)
+		return
+	}
+
+	i, err := insertOneItem(r.Context(), h.db, namespace, string(bodyClean))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
@@ -99,8 +113,15 @@ func (h *Handler) HandleInsertOne(w http.ResponseWriter, r *http.Request) {
 	}
 
 	m := make(map[string]any)
-	json.Unmarshal([]byte(i.Contents), &m)
+	err = json.Unmarshal([]byte(i.Contents), &m)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.WithContext(r.Context()).Error(err)
+		return
+	}
+
 	m["id"] = i.ID
+	m["created_at"] = i.CreatedAt
 
 	result, err := json.Marshal(m)
 	if err != nil {
@@ -145,8 +166,15 @@ func (h *Handler) HandleRetrieveOne(w http.ResponseWriter, r *http.Request) {
 	}
 
 	m := make(map[string]any)
-	json.Unmarshal([]byte(i.Contents), &m)
+	err = json.Unmarshal([]byte(i.Contents), &m)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.WithContext(r.Context()).Error(err)
+		return
+	}
+
 	m["id"] = i.ID
+	m["created_at"] = i.CreatedAt
 
 	result, err := json.Marshal(m)
 	if err != nil {
@@ -182,7 +210,22 @@ func (h *Handler) HandleUpdateOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i, err := updateItem(r.Context(), h.db, namespace, id, string(body))
+	bodyJson := make(map[string]any)
+	err = json.Unmarshal(body, &bodyJson)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.WithContext(r.Context()).Error(err)
+		return
+	}
+
+	bodyClean, err := json.Marshal(bodyJson)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.WithContext(r.Context()).Error(err)
+		return
+	}
+
+	i, err := updateItem(r.Context(), h.db, namespace, id, string(bodyClean))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
@@ -190,8 +233,15 @@ func (h *Handler) HandleUpdateOne(w http.ResponseWriter, r *http.Request) {
 	}
 
 	m := make(map[string]any)
-	json.Unmarshal([]byte(i.Contents), &m)
+	err = json.Unmarshal([]byte(i.Contents), &m)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.WithContext(r.Context()).Error(err)
+		return
+	}
+
 	m["id"] = i.ID
+	m["created_at"] = i.CreatedAt
 
 	result, err := json.Marshal(m)
 	if err != nil {
