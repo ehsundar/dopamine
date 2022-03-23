@@ -115,3 +115,29 @@ func getItem(ctx context.Context, db *sql.DB, namespace string, id int) (*Item, 
 	}
 	return &i, nil
 }
+
+func updateItem(ctx context.Context, db *sql.DB, namespace string, id int, contents string) (*Item, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	query := getQuery("items/update-one", namespace)
+	stmt, err := db.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, contents, id)
+	if err != nil {
+		return nil, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}

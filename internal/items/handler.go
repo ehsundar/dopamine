@@ -25,6 +25,7 @@ func NewHandler(router *mux.Router, db *sql.DB) *Handler {
 	router.HandleFunc("/{namespace}/", hnd.HandleInsertOne).Methods("POST")
 
 	router.HandleFunc("/{namespace}/{id}/", hnd.HandleRetrieveOne).Methods("GET")
+	router.HandleFunc("/{namespace}/{id}/", hnd.HandleUpdateOne).Methods("PUT")
 	return hnd
 }
 
@@ -137,6 +138,32 @@ func (h *Handler) HandleRetrieveOne(w http.ResponseWriter, r *http.Request) {
 	_, err = w.Write(result)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		log.WithContext(r.Context()).Error(err)
+		return
+	}
+}
+
+func (h *Handler) HandleUpdateOne(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	namespace := vars["namespace"]
+	idStr := vars["id"]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.WithContext(r.Context()).Error(err)
+		return
+	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.WithContext(r.Context()).Error(err)
+		return
+	}
+
+	_, err = updateItem(r.Context(), h.db, namespace, id, string(body))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
 		return
 	}
