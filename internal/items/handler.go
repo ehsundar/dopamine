@@ -26,6 +26,8 @@ func NewHandler(router *mux.Router, db *sql.DB) *Handler {
 
 	router.HandleFunc("/{namespace}/{id}/", hnd.HandleRetrieveOne).Methods("GET")
 	router.HandleFunc("/{namespace}/{id}/", hnd.HandleUpdateOne).Methods("PUT")
+	router.HandleFunc("/{namespace}/{id}/", hnd.HandleDeleteOne).Methods("DELETE")
+
 	return hnd
 }
 
@@ -162,6 +164,25 @@ func (h *Handler) HandleUpdateOne(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err = updateItem(r.Context(), h.db, namespace, id, string(body))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.WithContext(r.Context()).Error(err)
+		return
+	}
+}
+
+func (h *Handler) HandleDeleteOne(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	namespace := vars["namespace"]
+	idStr := vars["id"]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.WithContext(r.Context()).Error(err)
+		return
+	}
+
+	err = deleteItem(r.Context(), h.db, namespace, id)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)

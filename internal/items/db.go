@@ -141,3 +141,29 @@ func updateItem(ctx context.Context, db *sql.DB, namespace string, id int, conte
 
 	return nil, nil
 }
+
+func deleteItem(ctx context.Context, db *sql.DB, namespace string, id int) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	query := getQuery("items/delete-one", namespace)
+	stmt, err := db.PrepareContext(ctx, query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

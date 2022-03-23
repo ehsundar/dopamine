@@ -1,0 +1,30 @@
+GET http://localhost:8080/items/
+Content-Type: application/json
+
+{
+  "username": "ehsandar"
+}
+
+###
+POST http://localhost:8080/items/
+Content-Type: application/json
+
+{
+  "username": "ehsandar"
+}
+
+###
+GET http://localhost:8080/items/1/
+Content-Type: application/json
+
+
+###
+PUT http://localhost:8080/items/1/
+Content-Type: application/json
+
+{
+  "username": "amir"
+}
+
+###
+DELETE http://localhost:8080/items/1/
