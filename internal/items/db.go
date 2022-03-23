@@ -117,29 +117,20 @@ func getItem(ctx context.Context, db *sql.DB, namespace string, id int) (*Item, 
 }
 
 func updateItem(ctx context.Context, db *sql.DB, namespace string, id int, contents string) (*Item, error) {
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
 	query := getQuery("items/update-one", namespace)
-	stmt, err := db.PrepareContext(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
-
-	_, err = stmt.ExecContext(ctx, contents, id)
-	if err != nil {
-		return nil, err
+	row := db.QueryRowContext(ctx, query, contents, id)
+	if row.Err() != nil {
+		return nil, row.Err()
 	}
 
-	err = tx.Commit()
+	i := Item{}
+	err := row.Scan(&i.ID, &i.Contents, &i.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
 
-	return nil, nil
+	return &i, nil
+
 }
 
 func deleteItem(ctx context.Context, db *sql.DB, namespace string, id int) error {

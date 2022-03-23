@@ -163,9 +163,28 @@ func (h *Handler) HandleUpdateOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = updateItem(r.Context(), h.db, namespace, id, string(body))
+	i, err := updateItem(r.Context(), h.db, namespace, id, string(body))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		log.WithContext(r.Context()).Error(err)
+		return
+	}
+
+	m := make(map[string]any)
+	json.Unmarshal([]byte(i.Contents), &m)
+	m["id"] = i.ID
+
+	result, err := json.Marshal(m)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.WithContext(r.Context()).Error(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(result)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
 		return
 	}

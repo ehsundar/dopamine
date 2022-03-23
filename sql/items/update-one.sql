@@ -1,4 +1,4 @@
 update ?
 set contents=?
 where id=?
-returning *;
+returning id, contents, created_at;
