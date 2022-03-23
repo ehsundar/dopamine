@@ -1,2 +1,3 @@
 insert into ?(contents, created_at)
-values (?, ?);
+values (?, ?)
+returning id, contents, created_at;

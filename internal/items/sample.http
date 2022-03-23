@@ -10,11 +10,11 @@ POST http://localhost:8080/items/
 Content-Type: application/json
 
 {
-  "username": "ehsandar"
+  "username": "test 4"
 }
 
 ###
-GET http://localhost:8080/items/1/
+GET http://localhost:8080/items/3/
 Content-Type: application/json
 
 

@@ -56,30 +56,20 @@ func createTable(ctx context.Context, db *sql.DB, namespace string) error {
 	return nil
 }
 
-func insertOneItem(ctx context.Context, db *sql.DB, namespace string, contents string) error {
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
+func insertOneItem(ctx context.Context, db *sql.DB, namespace string, contents string) (*Item, error) {
+	query := getQuery("items/insert-one", namespace)
+	row := db.QueryRowContext(ctx, query, contents, time.Now())
+	if row.Err() != nil {
+		return nil, row.Err()
 	}
 
-	createTableQuery := getQuery("items/insert-one", namespace)
-	stmt, err := db.PrepareContext(ctx, createTableQuery)
+	i := Item{}
+	err := row.Scan(&i.ID, &i.Contents, &i.CreatedAt)
 	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	_, err = stmt.ExecContext(ctx, contents, time.Now())
-	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return &i, nil
 }
 
 func listItems(ctx context.Context, db *sql.DB, namespace string) ([]*Item, error) {
@@ -130,7 +120,6 @@ func updateItem(ctx context.Context, db *sql.DB, namespace string, id int, conte
 	}
 
 	return &i, nil
-
 }
 
 func deleteItem(ctx context.Context, db *sql.DB, namespace string, id int) error {
