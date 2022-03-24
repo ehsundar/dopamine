@@ -1,24 +1,23 @@
 package items
 
 import (
-	"database/sql"
-	"encoding/json"
-	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 
-	"github.com/samber/lo"
+	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/ehsundar/dopamine/pkg/storage"
 )
 
 type Handler struct {
-	db *sql.DB
+	s storage.Storage
 }
 
-func NewHandler(router *mux.Router, db *sql.DB) *Handler {
+func NewHandler(router *mux.Router, s storage.Storage) *Handler {
 	hnd := &Handler{
-		db: db,
+		s: s,
 	}
 
 	router.HandleFunc("/{namespace}/", hnd.HandleList).Methods("GET")
@@ -35,28 +34,14 @@ func (h *Handler) HandleList(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	namespace := vars["namespace"]
 
-	err := createTable(r.Context(), h.db, namespace)
+	items, err := h.s.GetAll(r.Context(), namespace)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
 		return
 	}
 
-	items, err := listItems(r.Context(), h.db, namespace)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.WithContext(r.Context()).Error(err)
-		return
-	}
-
-	mapped := lo.Map(items, func(i *Item, _ int) map[string]any {
-		m := make(map[string]any)
-		json.Unmarshal([]byte(i.Contents), &m)
-		m["id"] = i.ID
-		return m
-	})
-
-	result, err := json.Marshal(mapped)
+	result, err := storage.ItemsToJSON(items, true)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
@@ -76,13 +61,6 @@ func (h *Handler) HandleInsertOne(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	namespace := vars["namespace"]
 
-	err := createTable(r.Context(), h.db, namespace)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.WithContext(r.Context()).Error(err)
-		return
-	}
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -90,40 +68,21 @@ func (h *Handler) HandleInsertOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bodyJson := make(map[string]any)
-	err = json.Unmarshal(body, &bodyJson)
+	i, err := storage.ItemFromJSON(body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
 		return
 	}
 
-	bodyClean, err := json.Marshal(bodyJson)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.WithContext(r.Context()).Error(err)
-		return
-	}
-
-	i, err := insertOneItem(r.Context(), h.db, namespace, string(bodyClean))
+	i, err = h.s.InsertOne(r.Context(), namespace, i)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
 		return
 	}
 
-	m := make(map[string]any)
-	err = json.Unmarshal([]byte(i.Contents), &m)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.WithContext(r.Context()).Error(err)
-		return
-	}
-
-	m["id"] = i.ID
-	m["created_at"] = i.CreatedAt
-
-	result, err := json.Marshal(m)
+	result, err := i.ToJSON(true)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
@@ -151,32 +110,14 @@ func (h *Handler) HandleRetrieveOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = createTable(r.Context(), h.db, namespace)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.WithContext(r.Context()).Error(err)
-		return
-	}
-
-	i, err := getItem(r.Context(), h.db, namespace, id)
+	i, err := h.s.GetOne(r.Context(), namespace, id)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		log.WithContext(r.Context()).Error(err)
 		return
 	}
 
-	m := make(map[string]any)
-	err = json.Unmarshal([]byte(i.Contents), &m)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.WithContext(r.Context()).Error(err)
-		return
-	}
-
-	m["id"] = i.ID
-	m["created_at"] = i.CreatedAt
-
-	result, err := json.Marshal(m)
+	result, err := i.ToJSON(true)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
@@ -210,40 +151,21 @@ func (h *Handler) HandleUpdateOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bodyJson := make(map[string]any)
-	err = json.Unmarshal(body, &bodyJson)
+	i, err := storage.ItemFromJSON(body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
 		return
 	}
+	i.ID = id
 
-	bodyClean, err := json.Marshal(bodyJson)
+	i, err = h.s.UpdateOne(r.Context(), namespace, i)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
 		return
 	}
-
-	i, err := updateItem(r.Context(), h.db, namespace, id, string(bodyClean))
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.WithContext(r.Context()).Error(err)
-		return
-	}
-
-	m := make(map[string]any)
-	err = json.Unmarshal([]byte(i.Contents), &m)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.WithContext(r.Context()).Error(err)
-		return
-	}
-
-	m["id"] = i.ID
-	m["created_at"] = i.CreatedAt
-
-	result, err := json.Marshal(m)
+	result, err := i.ToJSON(true)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
@@ -270,7 +192,7 @@ func (h *Handler) HandleDeleteOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = deleteItem(r.Context(), h.db, namespace, id)
+	err = h.s.DeleteOne(r.Context(), namespace, id)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
