@@ -1,6 +1,13 @@
 package storage
 
-import "context"
+import (
+	"context"
+	"errors"
+)
+
+var (
+	ErrTableNotExist = errors.New("table does not exist")
+)
 
 type Storage interface {
 	GetAll(ctx context.Context, table string) ([]*Item, error)

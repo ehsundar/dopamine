@@ -1,0 +1,18 @@
+POST http://localhost:8080/auth/authenticate/
+Accept: application/json
+Content-Type: application/json
+
+{
+  "username": "1",
+  "password": "test"
+}
+
+
+###
+POST http://localhost:8080/users/
+Accept: application/json
+Content-Type: application/json
+
+{
+  "password": "test"
+}

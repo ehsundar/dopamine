@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/samber/lo"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -54,6 +55,14 @@ func (s *sqlite) GetAll(ctx context.Context, table string) ([]*Item, error) {
 }
 
 func (s *sqlite) GetOne(ctx context.Context, table string, id int) (*Item, error) {
+	exists, err := s.checkTableExists(ctx, table)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, ErrTableNotExist
+	}
+
 	query := getQuery("items/retrieve-one", table)
 	row := s.db.QueryRowContext(ctx, query, id)
 	if row.Err() != nil {
@@ -62,7 +71,7 @@ func (s *sqlite) GetOne(ctx context.Context, table string, id int) (*Item, error
 
 	i := Item{}
 	var c string
-	err := row.Scan(&i.ID, &c, &i.CreatedAt)
+	err = row.Scan(&i.ID, &c, &i.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -178,6 +187,33 @@ func (s *sqlite) createTable(ctx context.Context, table string) error {
 	}
 
 	return nil
+}
+
+func (s *sqlite) checkTableExists(ctx context.Context, table string) (bool, error) {
+	tables, err := s.tables(ctx)
+	if err != nil {
+		return false, err
+	}
+	return lo.Contains(tables, table), nil
+}
+
+func (s *sqlite) tables(ctx context.Context) ([]string, error) {
+	query := getQuery("list-tables")
+	rows, err := s.db.QueryContext(ctx, query)
+	if err != nil {
+		return []string{}, err
+	}
+
+	var names []string
+	var n string
+	for rows.Next() {
+		err = rows.Scan(&n)
+		if err != nil {
+			return []string{}, err
+		}
+		names = append(names, n)
+	}
+	return names, nil
 }
 
 func getQuery(name string, unsafeParams ...string) string {

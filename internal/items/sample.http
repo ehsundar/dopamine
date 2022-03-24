@@ -10,7 +10,7 @@ POST http://localhost:8080/items/
 Content-Type: application/json
 
 {
-  "username": "test 4"
+  "username": "test 6"
 }
 
 ###
@@ -19,11 +19,11 @@ Content-Type: application/json
 
 
 ###
-PUT http://localhost:8080/items/2/
+PUT http://localhost:8080/items/6/
 Content-Type: application/json
 
 {
-  "username": "man"
+  "username": "test !"
 }
 
 ###
