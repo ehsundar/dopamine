@@ -1,6 +1,8 @@
 package items
 
 import (
+	"github.com/ehsundar/dopamine/internal/auth/token"
+	"github.com/ehsundar/dopamine/pkg/middleware/auth"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -15,12 +17,13 @@ type Handler struct {
 	s storage.Storage
 }
 
-func NewHandler(router *mux.Router, s storage.Storage) *Handler {
+func NewHandler(router *mux.Router, s storage.Storage, manager *token.Manager) *Handler {
 	hnd := &Handler{
 		s: s,
 	}
 
-	router.HandleFunc("/{namespace}/", hnd.HandleList).Methods("GET")
+	router.HandleFunc("/{namespace}/",
+		auth.NewAuthMiddleware(hnd.HandleList, manager)).Methods("GET")
 	router.HandleFunc("/{namespace}/", hnd.HandleInsertOne).Methods("POST")
 
 	router.HandleFunc("/{namespace}/{id}/", hnd.HandleRetrieveOne).Methods("GET")

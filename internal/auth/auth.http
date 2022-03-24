@@ -1,3 +1,4 @@
+### get token for username and password
 POST http://localhost:8080/auth/authenticate/
 Accept: application/json
 Content-Type: application/json

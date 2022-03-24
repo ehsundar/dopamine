@@ -69,7 +69,7 @@ func (h handler) HandleAuthenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tk, err := h.manager.Generate(req.Username, &token.Subject{Superuser: false})
+	tk, err := h.manager.Generate(&token.Subject{UserID: req.Username, Superuser: false})
 	if err != nil {
 		log.WithError(err).Error("error generating jwt")
 		w.WriteHeader(http.StatusInternalServerError)

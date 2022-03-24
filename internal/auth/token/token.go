@@ -19,6 +19,7 @@ type Manager struct {
 }
 
 type Subject struct {
+	UserID    string
 	Superuser bool
 }
 
@@ -26,7 +27,7 @@ func NewManager(signingKey []byte) *Manager {
 	return &Manager{signingKey: signingKey}
 }
 
-func (tg *Manager) Generate(userID string, subject *Subject) (string, error) {
+func (tg *Manager) Generate(subject *Subject) (string, error) {
 	subjectStr := ""
 	if subject != nil {
 		j, err := json.Marshal(subject)
@@ -38,7 +39,7 @@ func (tg *Manager) Generate(userID string, subject *Subject) (string, error) {
 	claims := jwt.StandardClaims{
 		Audience:  "",
 		ExpiresAt: time.Now().AddDate(0, 0, 3).Unix(),
-		Id:        userID,
+		Id:        subject.UserID,
 		IssuedAt:  time.Now().Unix(),
 		Issuer:    "dopamine",
 		NotBefore: time.Now().Unix(),
@@ -48,22 +49,22 @@ func (tg *Manager) Generate(userID string, subject *Subject) (string, error) {
 }
 
 func (tg *Manager) Validate(token string) (*Subject, error) {
-	subject := Subject{}
-
-	tk, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-		// Don't forget to validate the alg is what you expect:
+	tk, err := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
-		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
 		return tg.signingKey, nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	if claims, ok := tk.Claims.(jwt.StandardClaims); ok && tk.Valid {
+	if claims, ok := tk.Claims.(*jwt.StandardClaims); ok && tk.Valid {
+		subject := Subject{}
 		err = json.Unmarshal([]byte(claims.Subject), &subject)
 		log.WithError(err).Error(ErrInvalidClaimSubject)
-		return &subject, ErrInvalidClaimSubject
+		return &subject, err
 	} else {
 		return nil, ErrInvalidStandardClaim
 	}

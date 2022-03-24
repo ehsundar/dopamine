@@ -1,5 +1,7 @@
+### Item list
 GET http://localhost:8080/items/
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDg0MjAzNjEsImp0aSI6IjEiLCJpYXQiOjE2NDgxNjExNjEsImlzcyI6ImRvcGFtaW5lIiwibmJmIjoxNjQ4MTYxMTYxLCJzdWIiOiJ7XCJVc2VySURcIjpcIjFcIixcIlN1cGVydXNlclwiOmZhbHNlfSJ9.SY1bMx3-4mnf0TLeYIN28jX17WAfEc61sVGVMdPZmCM
 
 {
   "username": "ehsandar"

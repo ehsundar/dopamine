@@ -21,7 +21,7 @@ func main() {
 
 	router := mux.NewRouter()
 
-	_ = items.NewHandler(router, s)
+	_ = items.NewHandler(router, s, tokenManager)
 	auth.NewHandler(router, s, tokenManager)
 
 	serverAddr := "0.0.0.0:8080"
