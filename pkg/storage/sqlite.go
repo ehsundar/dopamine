@@ -84,7 +84,7 @@ func (s *sqlite) InsertOne(ctx context.Context, table string, item *Item) (*Item
 	contents, err := item.ToJSON(false)
 
 	query := getQuery("items/insert-one", table)
-	row := s.db.QueryRowContext(ctx, query, contents, time.Now())
+	row := s.db.QueryRowContext(ctx, query, string(contents), time.Now())
 	if row.Err() != nil {
 		return nil, row.Err()
 	}
@@ -108,7 +108,7 @@ func (s *sqlite) UpdateOne(ctx context.Context, table string, item *Item) (*Item
 	contents, err := item.ToJSON(false)
 
 	query := getQuery("items/update-one", table)
-	row := s.db.QueryRowContext(ctx, query, contents, item.ID)
+	row := s.db.QueryRowContext(ctx, query, string(contents), item.ID)
 	if row.Err() != nil {
 		return nil, row.Err()
 	}
