@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/ehsundar/dopamine/pkg/storage"
-	"log"
 	"net/http"
 
-	"github.com/ehsundar/dopamine/internal/items"
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
+	log "github.com/sirupsen/logrus"
+
+	"github.com/ehsundar/dopamine/internal/items"
+	"github.com/ehsundar/dopamine/pkg/storage"
 )
 
 func main() {
@@ -17,8 +18,11 @@ func main() {
 
 	_ = items.NewHandler(router, s)
 
-	err := http.ListenAndServe("0.0.0.0:8080", router)
+	serverAddr := "0.0.0.0:8080"
+	log.Infof("serving http server at %s", serverAddr)
+	err := http.ListenAndServe(serverAddr, router)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		panic(err)
 	}
 }

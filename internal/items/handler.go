@@ -36,23 +36,23 @@ func (h *Handler) HandleList(w http.ResponseWriter, r *http.Request) {
 
 	items, err := h.s.GetAll(r.Context(), namespace)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	result, err := storage.ItemsToJSON(items, true)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	_, err = w.Write(result)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
@@ -63,29 +63,29 @@ func (h *Handler) HandleInsertOne(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	i, err := storage.ItemFromJSON(body)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	i, err = h.s.InsertOne(r.Context(), namespace, i)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	result, err := i.ToJSON(true)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -93,8 +93,8 @@ func (h *Handler) HandleInsertOne(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	_, err = w.Write(result)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
@@ -105,30 +105,30 @@ func (h *Handler) HandleRetrieveOne(w http.ResponseWriter, r *http.Request) {
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	i, err := h.s.GetOne(r.Context(), namespace, id)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	result, err := i.ToJSON(true)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	_, err = w.Write(result)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
@@ -139,44 +139,44 @@ func (h *Handler) HandleUpdateOne(w http.ResponseWriter, r *http.Request) {
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	i, err := storage.ItemFromJSON(body)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	i.ID = id
 
 	i, err = h.s.UpdateOne(r.Context(), namespace, i)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	result, err := i.ToJSON(true)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	_, err = w.Write(result)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
@@ -187,15 +187,15 @@ func (h *Handler) HandleDeleteOne(w http.ResponseWriter, r *http.Request) {
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	err = h.s.DeleteOne(r.Context(), namespace, id)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
 		log.WithContext(r.Context()).Error(err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 }
