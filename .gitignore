@@ -17,3 +17,4 @@
 *.db
 dopamine-secret.txt
 dopamine.db
+dopamine.yaml

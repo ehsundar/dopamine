@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/ehsundar/dopamine/internal/auth"
 	"github.com/ehsundar/dopamine/internal/auth/token"
+	"github.com/spf13/viper"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -15,7 +16,9 @@ import (
 )
 
 func main() {
-	s := storage.NewSqliteStorage("./dopamine.db")
+	LoadConfig()
+
+	s := storage.NewSqliteStorage(viper.GetString("dsn"))
 
 	signingKey := token.LoadSigningKey()
 	tokenManager := token.NewManager(signingKey)
