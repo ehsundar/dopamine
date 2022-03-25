@@ -19,8 +19,9 @@ type Manager struct {
 }
 
 type Subject struct {
-	UserID    string
-	Superuser bool
+	UserID      string
+	Superuser   bool
+	Permissions []string
 }
 
 func NewManager(signingKey []byte) *Manager {
