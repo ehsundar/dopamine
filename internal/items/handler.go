@@ -1,7 +1,6 @@
 package items
 
 import (
-	"github.com/ehsundar/dopamine/internal/auth/token"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -12,30 +11,28 @@ import (
 	"github.com/ehsundar/dopamine/pkg/storage"
 )
 
-type Handler struct {
+type handler struct {
 	s storage.Storage
 }
 
-func NewHandler(router *mux.Router, s storage.Storage, manager *token.Manager) *Handler {
-	hnd := &Handler{
+func RegisterHandlers(router *mux.Router, s storage.Storage) {
+	hnd := &handler{
 		s: s,
 	}
 
-	router.HandleFunc("/{namespace}/", hnd.HandleList).Methods("GET")
-	router.HandleFunc("/{namespace}/", hnd.HandleInsertOne).Methods("POST")
+	router.HandleFunc("/{table}/", hnd.HandleList).Methods("GET")
+	router.HandleFunc("/{table}/", hnd.HandleInsertOne).Methods("POST")
 
-	router.HandleFunc("/{namespace}/{id}/", hnd.HandleRetrieveOne).Methods("GET")
-	router.HandleFunc("/{namespace}/{id}/", hnd.HandleUpdateOne).Methods("PUT")
-	router.HandleFunc("/{namespace}/{id}/", hnd.HandleDeleteOne).Methods("DELETE")
-
-	return hnd
+	router.HandleFunc("/{table}/{id}/", hnd.HandleRetrieveOne).Methods("GET")
+	router.HandleFunc("/{table}/{id}/", hnd.HandleUpdateOne).Methods("PUT")
+	router.HandleFunc("/{table}/{id}/", hnd.HandleDeleteOne).Methods("DELETE")
 }
 
-func (h *Handler) HandleList(w http.ResponseWriter, r *http.Request) {
+func (h *handler) HandleList(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	namespace := vars["namespace"]
+	table := vars["table"]
 
-	items, err := h.s.GetAll(r.Context(), namespace)
+	items, err := h.s.GetAll(r.Context(), table)
 	if err != nil {
 		log.WithContext(r.Context()).Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -58,9 +55,9 @@ func (h *Handler) HandleList(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) HandleInsertOne(w http.ResponseWriter, r *http.Request) {
+func (h *handler) HandleInsertOne(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	namespace := vars["namespace"]
+	table := vars["table"]
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -76,7 +73,7 @@ func (h *Handler) HandleInsertOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i, err = h.s.InsertOne(r.Context(), namespace, i)
+	i, err = h.s.InsertOne(r.Context(), table, i)
 	if err != nil {
 		log.WithContext(r.Context()).Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -100,9 +97,9 @@ func (h *Handler) HandleInsertOne(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) HandleRetrieveOne(w http.ResponseWriter, r *http.Request) {
+func (h *handler) HandleRetrieveOne(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	namespace := vars["namespace"]
+	table := vars["table"]
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -111,7 +108,7 @@ func (h *Handler) HandleRetrieveOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i, err := h.s.GetOne(r.Context(), namespace, id)
+	i, err := h.s.GetOne(r.Context(), table, id)
 	if err != nil {
 		log.WithContext(r.Context()).Error(err)
 		w.WriteHeader(http.StatusNotFound)
@@ -134,9 +131,9 @@ func (h *Handler) HandleRetrieveOne(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) HandleUpdateOne(w http.ResponseWriter, r *http.Request) {
+func (h *handler) HandleUpdateOne(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	namespace := vars["namespace"]
+	table := vars["table"]
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -160,7 +157,7 @@ func (h *Handler) HandleUpdateOne(w http.ResponseWriter, r *http.Request) {
 	}
 	i.ID = id
 
-	i, err = h.s.UpdateOne(r.Context(), namespace, i)
+	i, err = h.s.UpdateOne(r.Context(), table, i)
 	if err != nil {
 		log.WithContext(r.Context()).Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -182,9 +179,9 @@ func (h *Handler) HandleUpdateOne(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) HandleDeleteOne(w http.ResponseWriter, r *http.Request) {
+func (h *handler) HandleDeleteOne(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	namespace := vars["namespace"]
+	table := vars["table"]
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -193,7 +190,7 @@ func (h *Handler) HandleDeleteOne(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.s.DeleteOne(r.Context(), namespace, id)
+	err = h.s.DeleteOne(r.Context(), table, id)
 	if err != nil {
 		log.WithContext(r.Context()).Error(err)
 		w.WriteHeader(http.StatusBadRequest)

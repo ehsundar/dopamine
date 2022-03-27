@@ -25,8 +25,8 @@ func main() {
 
 	router := mux.NewRouter()
 
-	_ = items.NewHandler(router, s, tokenManager)
-	auth.NewHandler(router, s, tokenManager)
+	items.RegisterHandlers(router, s)
+	auth.RegisterHandlers(router, s, tokenManager)
 
 	handlerFunc := http.Handler(router).ServeHTTP
 	httpServer := authMw.NewAuthMiddleware(handlerFunc, tokenManager)

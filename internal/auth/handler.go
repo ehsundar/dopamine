@@ -19,7 +19,7 @@ type handler struct {
 	manager *token.Manager
 }
 
-func NewHandler(router *mux.Router, s storage.Storage, manager *token.Manager) {
+func RegisterHandlers(router *mux.Router, s storage.Storage, manager *token.Manager) {
 	hnd := &handler{
 		s:       s,
 		manager: manager,
