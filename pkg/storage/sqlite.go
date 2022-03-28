@@ -4,11 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"github.com/samber/lo"
-	"io/ioutil"
 	"log"
-	"strings"
 	"time"
 )
 
@@ -214,18 +211,4 @@ func (s *sqlite) tables(ctx context.Context) ([]string, error) {
 		names = append(names, n)
 	}
 	return names, nil
-}
-
-func getQuery(name string, unsafeParams ...string) string {
-	query, err := ioutil.ReadFile("sql/" + name + ".sql")
-	if err != nil {
-		log.Fatal(fmt.Sprintf("cannot read query: %s: %s", name, err))
-	}
-	q := string(query)
-
-	for _, p := range unsafeParams {
-		q = strings.Replace(q, "?", p, 1)
-	}
-
-	return q
 }
