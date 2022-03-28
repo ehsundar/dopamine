@@ -1,19 +1,23 @@
+### create new user with permissions
+POST http://localhost:8080/users/
+Accept: application/json
+Content-Type: application/json
+
+{
+  "password": "test",
+  "superuser": false,
+  "permissions": ["create-posts"]
+}
+
+
 ### get token for username and password
 POST http://localhost:8080/auth/authenticate/
 Accept: application/json
 Content-Type: application/json
 
 {
-  "username": "1",
+  "username": "2",
   "password": "test"
 }
 
-
-###
-POST http://localhost:8080/users/
-Accept: application/json
-Content-Type: application/json
-
-{
-  "password": "test"
-}
+> {% client.global.set("auth_jwt_token", response.body.json.Token); %}

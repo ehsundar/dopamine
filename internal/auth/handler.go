@@ -4,6 +4,7 @@ import (
 	"github.com/ehsundar/dopamine/internal/auth/token"
 	"github.com/ehsundar/dopamine/pkg/storage"
 	"github.com/gorilla/mux"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -69,7 +70,18 @@ func (h handler) HandleAuthenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tk, err := h.manager.Generate(&token.Subject{UserID: req.Username, Superuser: false})
+	superuser := item.Contents["superuser"].(bool)
+	permissionsAny := item.Contents["permissions"].([]interface{})
+	permissions := lo.Map(permissionsAny, func(p any, _ int) string {
+		return p.(string)
+	})
+
+	subject := &token.Subject{
+		UserID:      req.Username,
+		Superuser:   superuser,
+		Permissions: permissions,
+	}
+	tk, err := h.manager.Generate(subject)
 	if err != nil {
 		log.WithError(err).Error("error generating jwt")
 		w.WriteHeader(http.StatusInternalServerError)

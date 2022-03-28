@@ -1,11 +1,7 @@
 ### Item list
-GET http://localhost:8080/items/
+GET http://localhost:8080/users/
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDg0MjAzNjEsImp0aSI6IjEiLCJpYXQiOjE2NDgxNjExNjEsImlzcyI6ImRvcGFtaW5lIiwibmJmIjoxNjQ4MTYxMTYxLCJzdWIiOiJ7XCJVc2VySURcIjpcIjFcIixcIlN1cGVydXNlclwiOmZhbHNlfSJ9.SY1bMx3-4mnf0TLeYIN28jX17WAfEc61sVGVMdPZmCM
-
-{
-  "username": "ehsandar"
-}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDg3NDE5NjIsImp0aSI6IjIiLCJpYXQiOjE2NDg0ODI3NjIsImlzcyI6ImRvcGFtaW5lIiwibmJmIjoxNjQ4NDgyNzYyLCJzdWIiOiJ7XCJVc2VySURcIjpcIjJcIixcIlN1cGVydXNlclwiOmZhbHNlLFwiUGVybWlzc2lvbnNcIjpbXCJjcmVhdGUtcG9zdHNcIl19In0.5leAsGzIDnJ9tvGwjdScDU9tAQVB2k_V1gDqPqW3Nds
 
 ###
 POST http://localhost:8080/items/

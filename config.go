@@ -9,10 +9,9 @@ func LoadConfig() {
 	viper.SetConfigName("dopamine")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
+	viper.WatchConfig()
 
-	viper.SetDefault("dsn", "./dopamine")
-	viper.SetDefault("protectedTables", []string{"users"})
-	viper.SetDefault("readonlyTables", []string{"schemas"})
+	viper.SetDefault("dsn", "./dopamine.sqlite3")
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {

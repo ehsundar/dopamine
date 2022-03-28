@@ -64,7 +64,9 @@ func (tg *Manager) Validate(token string) (*Subject, error) {
 	if claims, ok := tk.Claims.(*jwt.StandardClaims); ok && tk.Valid {
 		subject := Subject{}
 		err = json.Unmarshal([]byte(claims.Subject), &subject)
-		log.WithError(err).Error(ErrInvalidClaimSubject)
+		if err != nil {
+			log.WithError(err).Error(ErrInvalidClaimSubject)
+		}
 		return &subject, err
 	} else {
 		return nil, ErrInvalidStandardClaim
