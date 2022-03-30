@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"github.com/samber/lo"
 	"log"
 	"time"
+
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/samber/lo"
 )
 
 type sqlite struct {

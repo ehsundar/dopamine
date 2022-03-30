@@ -19,3 +19,4 @@ dopamine-secret.txt
 dopamine.db
 dopamine.yaml
 dopamine
+dopamine.sqlite3
