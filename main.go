@@ -1,11 +1,12 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package main
 
-import "github.com/ehsundar/dopamine/cmd"
+import (
+	"github.com/ehsundar/dopamine/cmd"
+	log "github.com/sirupsen/logrus"
+)
 
 func main() {
+	log.SetReportCaller(true)
+
 	cmd.Execute()
 }

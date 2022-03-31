@@ -74,9 +74,9 @@ func RegisterHandlers(router *mux.Router, s storage.Storage) {
 	router.HandleFunc("/{table}/", PermissionsMiddleware(hnd.HandleList, auth.APIList)).Methods("GET")
 	router.HandleFunc("/{table}/", hnd.HandleInsertOne).Methods("POST")
 
-	router.HandleFunc("/{table}/{id}/", hnd.HandleRetrieveOne).Methods("GET")
-	router.HandleFunc("/{table}/{id}/", hnd.HandleUpdateOne).Methods("PUT")
-	router.HandleFunc("/{table}/{id}/", hnd.HandleDeleteOne).Methods("DELETE")
+	router.HandleFunc("/{table}/{id:[0-9]+}/", hnd.HandleRetrieveOne).Methods("GET")
+	router.HandleFunc("/{table}/{id:[0-9]+}/", hnd.HandleUpdateOne).Methods("PUT")
+	router.HandleFunc("/{table}/{id:[0-9]+}/", hnd.HandleDeleteOne).Methods("DELETE")
 }
 
 func (h *handler) HandleList(w http.ResponseWriter, r *http.Request) {

@@ -21,3 +21,24 @@ Content-Type: application/json
 }
 
 > {% client.global.set("auth_jwt_token", response.body.json.Token); %}
+
+
+### grant permission to a user
+POST http://localhost:8080/auth/permissions/
+Accept: application/json
+Content-Type: application/json
+
+{
+  "username": "1",
+  "permission": "test"
+}
+
+### drop permission to a user
+DELETE http://localhost:8080/auth/permissions/
+Accept: application/json
+Content-Type: application/json
+
+{
+  "username": "1",
+  "permission": "test"
+}

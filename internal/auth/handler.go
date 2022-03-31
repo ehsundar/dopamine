@@ -27,9 +27,11 @@ func RegisterHandlers(router *mux.Router, s storage.Storage, manager *token.Mana
 	}
 
 	router.HandleFunc(urlPrefix+"/authenticate/", hnd.HandleAuthenticate).Methods("POST")
+	router.HandleFunc(urlPrefix+"/permissions/", hnd.HandleGrantPermission).Methods("POST")
+	router.HandleFunc(urlPrefix+"/permissions/", hnd.HandleDropPermission).Methods("DELETE")
 }
 
-func (h handler) HandleAuthenticate(w http.ResponseWriter, r *http.Request) {
+func (h *handler) HandleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.WithError(err).Error("can not read request body")
@@ -59,8 +61,8 @@ func (h handler) HandleAuthenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		log.WithError(err).Error("can not get user item")
-		w.WriteHeader(http.StatusInternalServerError)
+		log.WithError(err).Error("can not get user")
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -97,4 +99,84 @@ func (h handler) HandleAuthenticate(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+func (h *handler) HandleGrantPermission(w http.ResponseWriter, r *http.Request) {
+	req := &GrantPermissionRequest{}
+	if err := req.Parse(r.Body); err != nil {
+		log.WithError(err).Error("can not read request body")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	userID, err := strconv.Atoi(req.Username)
+	if err != nil {
+		log.WithError(err).Error("username must be an int")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.s.GetOne(r.Context(), "users", userID)
+	if err != nil {
+		log.WithError(err).Error("can not get user")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	permissionsAny := user.Contents["permissions"].([]interface{})
+	permissions := lo.Map(permissionsAny, func(p any, _ int) string {
+		return p.(string)
+	})
+
+	user.Contents["permissions"] = lo.Uniq(append(permissions, req.Permission))
+	_, err = h.s.UpdateOne(r.Context(), "users", user)
+	if err != nil {
+		log.WithError(err).Error("can not update user")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	return
+}
+
+func (h *handler) HandleDropPermission(w http.ResponseWriter, r *http.Request) {
+	req := &DropPermissionRequest{}
+	if err := req.Parse(r.Body); err != nil {
+		log.WithError(err).Error("can not read request body")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	userID, err := strconv.Atoi(req.Username)
+	if err != nil {
+		log.WithError(err).Error("username must be an int")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.s.GetOne(r.Context(), "users", userID)
+	if err != nil {
+		log.WithError(err).Error("can not get user")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	permissionsAny := user.Contents["permissions"].([]interface{})
+	permissions := lo.Map(permissionsAny, func(p any, _ int) string {
+		return p.(string)
+	})
+
+	user.Contents["permissions"] = lo.Filter(permissions, func(p string, _ int) bool {
+		return p != req.Permission
+	})
+	_, err = h.s.UpdateOne(r.Context(), "users", user)
+	if err != nil {
+		log.WithError(err).Error("can not update user")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+	return
 }

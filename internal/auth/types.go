@@ -27,3 +27,23 @@ func (r *AuthenticateResponse) Render(writer io.Writer) error {
 	_, err = writer.Write(response)
 	return err
 }
+
+type GrantPermissionRequest struct {
+	Username   string
+	Permission string
+}
+
+func (r *GrantPermissionRequest) Parse(reader io.Reader) error {
+	d := json.NewDecoder(reader)
+	return d.Decode(&r)
+}
+
+type DropPermissionRequest struct {
+	Username   string
+	Permission string
+}
+
+func (r *DropPermissionRequest) Parse(reader io.Reader) error {
+	d := json.NewDecoder(reader)
+	return d.Decode(&r)
+}
