@@ -19,16 +19,17 @@ func RegisterHandlers(router *mux.Router, s storage.Storage) {
 		s: s,
 	}
 
-	router.HandleFunc("/{table}/",
-		permission.Middleware(hnd.HandleList, permission.List)).Methods("GET")
-	router.HandleFunc("/{table}/",
-		permission.Middleware(hnd.HandleInsertOne, permission.Create)).Methods("POST")
-	router.HandleFunc("/{table}/{id:[0-9]+}/",
-		permission.Middleware(hnd.HandleRetrieveOne, permission.Retrieve)).Methods("GET")
-	router.HandleFunc("/{table}/{id:[0-9]+}/",
-		permission.Middleware(hnd.HandleUpdateOne, permission.Update)).Methods("PUT")
-	router.HandleFunc("/{table}/{id:[0-9]+}/",
-		permission.Middleware(hnd.HandleDeleteOne, permission.Delete)).Methods("DELETE")
+	list := permission.Middleware(hnd.HandleList, permission.TablePermissionExtractorFactory(permission.List))
+	insert := permission.Middleware(hnd.HandleInsertOne, permission.TablePermissionExtractorFactory(permission.Create))
+	retrieve := permission.Middleware(hnd.HandleRetrieveOne, permission.TablePermissionExtractorFactory(permission.Retrieve))
+	update := permission.Middleware(hnd.HandleUpdateOne, permission.TablePermissionExtractorFactory(permission.Update))
+	drop := permission.Middleware(hnd.HandleDeleteOne, permission.TablePermissionExtractorFactory(permission.Delete))
+
+	router.HandleFunc("/{table}/", list).Methods("GET")
+	router.HandleFunc("/{table}/", insert).Methods("POST")
+	router.HandleFunc("/{table}/{id:[0-9]+}/", retrieve).Methods("GET")
+	router.HandleFunc("/{table}/{id:[0-9]+}/", update).Methods("PUT")
+	router.HandleFunc("/{table}/{id:[0-9]+}/", drop).Methods("DELETE")
 }
 
 func (h *handler) HandleList(w http.ResponseWriter, r *http.Request) {

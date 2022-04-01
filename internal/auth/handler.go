@@ -2,6 +2,7 @@ package auth
 
 import (
 	"github.com/ehsundar/dopamine/internal/auth/token"
+	"github.com/ehsundar/dopamine/pkg/middleware/permission"
 	"github.com/ehsundar/dopamine/pkg/storage"
 	"github.com/gorilla/mux"
 	"github.com/samber/lo"
@@ -26,9 +27,12 @@ func RegisterHandlers(router *mux.Router, s storage.Storage, manager *token.Mana
 		manager: manager,
 	}
 
+	grant := permission.Middleware(hnd.HandleGrantPermission, permission.StaticExtractorFactory("permissions.create"))
+	drop := permission.Middleware(hnd.HandleDropPermission, permission.StaticExtractorFactory("permissions.delete"))
+
 	router.HandleFunc(urlPrefix+"/authenticate/", hnd.HandleAuthenticate).Methods("POST")
-	router.HandleFunc(urlPrefix+"/permissions/", hnd.HandleGrantPermission).Methods("POST")
-	router.HandleFunc(urlPrefix+"/permissions/", hnd.HandleDropPermission).Methods("DELETE")
+	router.HandleFunc(urlPrefix+"/permissions/", grant).Methods("POST")
+	router.HandleFunc(urlPrefix+"/permissions/", drop).Methods("DELETE")
 }
 
 func (h *handler) HandleAuthenticate(w http.ResponseWriter, r *http.Request) {

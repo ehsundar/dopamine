@@ -1,19 +1,15 @@
 package permission
 
 import (
-	"github.com/gorilla/mux"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
-func Middleware(next http.HandlerFunc, apiType string) http.HandlerFunc {
+func Middleware(next http.HandlerFunc, extractor Extractor) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		table := vars["table"]
-
 		subject := getSubject(r.Context())
-		permissionForTable := getPermissionForTable(table, apiType)
+		permissionForTable := extractor(r)
 
 		switch permissionForTable {
 		case "public":
@@ -21,7 +17,7 @@ func Middleware(next http.HandlerFunc, apiType string) http.HandlerFunc {
 		case "superuser":
 			if subject == nil || !subject.Superuser {
 				w.WriteHeader(http.StatusUnauthorized)
-				log.Infof("unauthorized request on superuser api: %s -> %s", apiType, table)
+				log.Infof("unauthorized request on superuser api")
 				return
 			}
 			break

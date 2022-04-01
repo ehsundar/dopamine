@@ -12,7 +12,7 @@ type ContextKey string
 
 const UserSubjectContextKey ContextKey = "authUserSubject"
 
-func NewAuthMiddleware(next http.HandlerFunc, manager *token.Manager) http.HandlerFunc {
+func Middleware(next http.HandlerFunc, manager *token.Manager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		header := r.Header.Get("Authorization")
 		if header == "" {

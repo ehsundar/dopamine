@@ -54,7 +54,7 @@ func serve(cmd *cobra.Command, args []string) {
 	auth.RegisterHandlers(router, s, tokenManager)
 
 	handlerFunc := http.Handler(router).ServeHTTP
-	httpServer := authMw.NewAuthMiddleware(handlerFunc, tokenManager)
+	httpServer := authMw.Middleware(handlerFunc, tokenManager)
 
 	serverAddr := "0.0.0.0:8080"
 	log.Infof("serving http server at %s", serverAddr)
