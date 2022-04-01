@@ -1,69 +1,18 @@
 package items
 
 import (
+	"github.com/ehsundar/dopamine/pkg/middleware/permission"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
-	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
-
-	"github.com/ehsundar/dopamine/pkg/middleware/auth"
 	"github.com/ehsundar/dopamine/pkg/storage"
+	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
 
 type handler struct {
 	s storage.Storage
-}
-
-func getPermissionForTable(table string, apiType string) string {
-	tablesConfig := viper.Sub("tables")
-	tb := tablesConfig.GetStringMapString(table)
-	perm, ok := tb[apiType]
-
-	if ok {
-		return perm
-	} else {
-		if table == "default" {
-			return "public"
-		} else {
-			return getPermissionForTable("default", apiType)
-		}
-	}
-}
-
-func PermissionsMiddleware(next http.HandlerFunc, apiType string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		table := vars["table"]
-
-		subject := auth.GetSubject(r.Context())
-		permissionForTable := getPermissionForTable(table, apiType)
-
-		switch permissionForTable {
-		case "public":
-			break
-		case "superuser":
-			if subject == nil || !subject.Superuser {
-				w.WriteHeader(http.StatusUnauthorized)
-				log.Infof("unauthorized request on superuser api: %s -> %s", apiType, table)
-				return
-			}
-			break
-		default:
-			if !lo.Contains(subject.Permissions, permissionForTable) {
-				w.WriteHeader(http.StatusUnauthorized)
-				log.Infof("unauthorized request: not enough permission: needed: %s, having: %s",
-					permissionForTable, subject.Permissions)
-				return
-			}
-			break
-		}
-
-		next(w, r)
-	}
 }
 
 func RegisterHandlers(router *mux.Router, s storage.Storage) {
@@ -71,12 +20,16 @@ func RegisterHandlers(router *mux.Router, s storage.Storage) {
 		s: s,
 	}
 
-	router.HandleFunc("/{table}/", PermissionsMiddleware(hnd.HandleList, auth.APIList)).Methods("GET")
-	router.HandleFunc("/{table}/", hnd.HandleInsertOne).Methods("POST")
-
-	router.HandleFunc("/{table}/{id:[0-9]+}/", hnd.HandleRetrieveOne).Methods("GET")
-	router.HandleFunc("/{table}/{id:[0-9]+}/", hnd.HandleUpdateOne).Methods("PUT")
-	router.HandleFunc("/{table}/{id:[0-9]+}/", hnd.HandleDeleteOne).Methods("DELETE")
+	router.HandleFunc("/{table}/",
+		permission.Middleware(hnd.HandleList, permission.List)).Methods("GET")
+	router.HandleFunc("/{table}/",
+		permission.Middleware(hnd.HandleInsertOne, permission.Create)).Methods("POST")
+	router.HandleFunc("/{table}/{id:[0-9]+}/",
+		permission.Middleware(hnd.HandleRetrieveOne, permission.Retrieve)).Methods("GET")
+	router.HandleFunc("/{table}/{id:[0-9]+}/",
+		permission.Middleware(hnd.HandleUpdateOne, permission.Update)).Methods("PUT")
+	router.HandleFunc("/{table}/{id:[0-9]+}/",
+		permission.Middleware(hnd.HandleDeleteOne, permission.Delete)).Methods("DELETE")
 }
 
 func (h *handler) HandleList(w http.ResponseWriter, r *http.Request) {
