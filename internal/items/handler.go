@@ -2,13 +2,12 @@ package items
 
 import (
 	"github.com/ehsundar/dopamine/pkg/middleware/permission"
-	"io/ioutil"
-	"net/http"
-	"strconv"
-
 	"github.com/ehsundar/dopamine/pkg/storage"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net/http"
+	"strconv"
 )
 
 type handler struct {
