@@ -1,7 +1,6 @@
 package permission
 
 import (
-	"github.com/ehsundar/dopamine/pkg/middleware/auth"
 	"github.com/gorilla/mux"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
@@ -30,7 +29,7 @@ func Middleware(next http.HandlerFunc, apiType string) http.HandlerFunc {
 		vars := mux.Vars(r)
 		table := vars["table"]
 
-		subject := auth.GetSubject(r.Context())
+		subject := getSubject(r.Context())
 		permissionForTable := getPermissionForTable(table, apiType)
 
 		switch permissionForTable {
