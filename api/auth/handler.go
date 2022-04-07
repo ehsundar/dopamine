@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"github.com/ehsundar/dopamine/internal/auth/token"
+	"github.com/ehsundar/dopamine/api/auth/token"
 	"github.com/ehsundar/dopamine/pkg/middleware/permission"
 	"github.com/ehsundar/dopamine/pkg/storage"
 	"github.com/gorilla/mux"
