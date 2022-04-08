@@ -2,9 +2,7 @@ package storage
 
 import (
 	"context"
-	"database/sql"
 	"github.com/doug-martin/goqu/v9"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -27,15 +25,11 @@ func TestSqlite_QueryOne(t *testing.T) {
 	cqs, ok := storage.(CustomQueryStorage)
 	s.True(ok)
 
-	db, err := sql.Open("sqlite3", dsn)
-	if err != nil {
-		log.Fatal(err)
-	}
-	dbqu := goqu.New("sqlite3", db)
-	expr := dbqu.From("test").Where(goqu.Ex{
-		"id": item.ID,
+	i, err := cqs.QueryOne(context.Background(), "test", func(dataset *goqu.SelectDataset) *goqu.SelectDataset {
+		return dataset.Where(goqu.Ex{
+			"id": item.ID,
+		})
 	})
-	i, err := cqs.QueryOne(context.Background(), expr)
 	s.Nil(err)
 
 	s.Equal("{\"key1\":\"value1\"}", i.Contents)
@@ -47,11 +41,15 @@ func TestSqlite_QueryMany(t *testing.T) {
 	s := assert.New(t)
 
 	storage := NewSqliteStorage(dsn)
-	_, err := storage.InsertOne(context.Background(), "test", &Item{
-		ContentsMap: map[string]any{
-			"key1": "value1",
+	_, err := storage.InsertOne(
+		context.Background(),
+		"test",
+		&Item{
+			ContentsMap: map[string]any{
+				"key1": "value1",
+			},
 		},
-	})
+	)
 	s.Nil(err)
 
 	_, err = storage.InsertOne(context.Background(), "test", &Item{
@@ -64,13 +62,13 @@ func TestSqlite_QueryMany(t *testing.T) {
 	cqs, ok := storage.(CustomQueryStorage)
 	s.True(ok)
 
-	db, err := sql.Open("sqlite3", dsn)
-	if err != nil {
-		log.Fatal(err)
-	}
-	dbqu := goqu.New("sqlite3", db)
-	expr := dbqu.From("test")
-	items, err := cqs.QueryMany(context.Background(), expr)
+	items, err := cqs.QueryMany(
+		context.Background(),
+		"test",
+		func(dataset *goqu.SelectDataset) *goqu.SelectDataset {
+			return dataset
+		},
+	)
 	s.Nil(err)
 
 	s.Len(items, 2)

@@ -3,15 +3,16 @@ package storage
 import (
 	"context"
 	"database/sql"
-	"log"
-	"time"
-
+	"github.com/doug-martin/goqu/v9"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/samber/lo"
+	"log"
+	"time"
 )
 
 type sqlite struct {
 	db *sql.DB
+	qu *goqu.Database
 }
 
 func NewSqliteStorage(dsn string) Storage {
@@ -22,6 +23,7 @@ func NewSqliteStorage(dsn string) Storage {
 
 	return &sqlite{
 		db: db,
+		qu: goqu.New("sqlite3", db),
 	}
 }
 

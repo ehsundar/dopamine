@@ -128,7 +128,7 @@ func (h *handler) HandleGrantPermission(w http.ResponseWriter, r *http.Request) 
 	}
 
 	permissionsAny := user.ContentsMap["permissions"].([]interface{})
-	permissions := lo.Map(permissionsAny, func(p any, _ int) string {
+	var permissions []string = lo.Map(permissionsAny, func(p any, _ int) string {
 		return p.(string)
 	})
 
