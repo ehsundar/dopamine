@@ -6,7 +6,7 @@ import (
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/ehsundar/dopamine/internal/auth/token"
+	"github.com/ehsundar/dopamine/api/auth/token"
 )
 
 func WithLoginRequired(next http.HandlerFunc) http.HandlerFunc {

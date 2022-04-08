@@ -18,7 +18,7 @@ func NewSessionManager(s storage.Storage) *SessionManager {
 
 func (m *SessionManager) Create(ctx context.Context, username string) (sessionID string, err error) {
 	s, err := m.s.InsertOne(ctx, sessionsTableName, &storage.Item{
-		Contents: map[string]any{
+		ContentsMap: map[string]any{
 			"username": username,
 		},
 	})
@@ -32,7 +32,7 @@ func (m *SessionManager) Create(ctx context.Context, username string) (sessionID
 //
 //func (m *SessionManager) RevokeUserSessions(ctx context.Context, username string) (err error) {
 //	s, err := m.s.InsertOne(ctx, sessionsTableName, &storage.Item{
-//		Contents: map[string]any{
+//		ContentsMap: map[string]any{
 //			"username": username,
 //		},
 //	})

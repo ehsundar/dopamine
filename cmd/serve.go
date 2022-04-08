@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"github.com/ehsundar/dopamine/internal/auth"
-	"github.com/ehsundar/dopamine/internal/auth/token"
-	"github.com/ehsundar/dopamine/internal/items"
+	"github.com/ehsundar/dopamine/api/auth"
+	"github.com/ehsundar/dopamine/api/auth/token"
+	"github.com/ehsundar/dopamine/api/items"
 	authMw "github.com/ehsundar/dopamine/pkg/middleware/auth"
 	"github.com/ehsundar/dopamine/pkg/storage"
 	"github.com/gorilla/mux"

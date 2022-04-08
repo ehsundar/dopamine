@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"log"
 	"time"
 
@@ -36,13 +35,12 @@ func (s *sqlite) GetAll(ctx context.Context, table string) ([]*Item, error) {
 	var items []*Item
 	for rows.Next() {
 		i := Item{}
-		var c string
-		err = rows.Scan(&i.ID, &c, &i.CreatedAt)
+		err = rows.Scan(&i.ID, &i.Contents, &i.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
 
-		err = json.Unmarshal([]byte(c), &i.Contents)
+		err = i.LoadContentsMap(false)
 		if err != nil {
 			return nil, err
 		}
@@ -69,13 +67,12 @@ func (s *sqlite) GetOne(ctx context.Context, table string, id int) (*Item, error
 	}
 
 	i := Item{}
-	var c string
-	err = row.Scan(&i.ID, &c, &i.CreatedAt)
+	err = row.Scan(&i.ID, &i.Contents, &i.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(c), &i.Contents)
+	err = i.LoadContentsMap(false)
 	if err != nil {
 		return nil, err
 	}
@@ -98,13 +95,12 @@ func (s *sqlite) InsertOne(ctx context.Context, table string, item *Item) (*Item
 	}
 
 	i := Item{}
-	var c string
-	err = row.Scan(&i.ID, &c, &i.CreatedAt)
+	err = row.Scan(&i.ID, &i.Contents, &i.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(c), &i.Contents)
+	err = i.LoadContentsMap(false)
 	if err != nil {
 		return nil, err
 	}
@@ -122,13 +118,12 @@ func (s *sqlite) UpdateOne(ctx context.Context, table string, item *Item) (*Item
 	}
 
 	i := Item{}
-	var c string
-	err = row.Scan(&i.ID, &c, &i.CreatedAt)
+	err = row.Scan(&i.ID, &i.Contents, &i.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(c), &i.Contents)
+	err = i.LoadContentsMap(false)
 	if err != nil {
 		return nil, err
 	}

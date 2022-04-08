@@ -70,14 +70,14 @@ func (h *handler) HandleAuthenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if item.Contents["password"] != req.Password {
+	if item.ContentsMap["password"] != req.Password {
 		log.WithError(err).Error("invalid password")
 		w.WriteHeader(http.StatusNotAcceptable)
 		return
 	}
 
-	superuser := item.Contents["superuser"].(bool)
-	permissionsAny := item.Contents["permissions"].([]interface{})
+	superuser := item.ContentsMap["superuser"].(bool)
+	permissionsAny := item.ContentsMap["permissions"].([]interface{})
 	permissions := lo.Map(permissionsAny, func(p any, _ int) string {
 		return p.(string)
 	})
@@ -127,12 +127,12 @@ func (h *handler) HandleGrantPermission(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	permissionsAny := user.Contents["permissions"].([]interface{})
+	permissionsAny := user.ContentsMap["permissions"].([]interface{})
 	permissions := lo.Map(permissionsAny, func(p any, _ int) string {
 		return p.(string)
 	})
 
-	user.Contents["permissions"] = lo.Uniq(append(permissions, req.Permission))
+	user.ContentsMap["permissions"] = lo.Uniq(append(permissions, req.Permission))
 	_, err = h.s.UpdateOne(r.Context(), "users", user)
 	if err != nil {
 		log.WithError(err).Error("can not update user")
@@ -166,12 +166,12 @@ func (h *handler) HandleDropPermission(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	permissionsAny := user.Contents["permissions"].([]interface{})
+	permissionsAny := user.ContentsMap["permissions"].([]interface{})
 	permissions := lo.Map(permissionsAny, func(p any, _ int) string {
 		return p.(string)
 	})
 
-	user.Contents["permissions"] = lo.Filter(permissions, func(p string, _ int) bool {
+	user.ContentsMap["permissions"] = lo.Filter(permissions, func(p string, _ int) bool {
 		return p != req.Permission
 	})
 	_, err = h.s.UpdateOne(r.Context(), "users", user)

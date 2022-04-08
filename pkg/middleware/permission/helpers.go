@@ -2,7 +2,7 @@ package permission
 
 import (
 	"context"
-	"github.com/ehsundar/dopamine/internal/auth/token"
+	"github.com/ehsundar/dopamine/api/auth/token"
 	"github.com/ehsundar/dopamine/pkg/middleware/auth"
 	"github.com/spf13/viper"
 )

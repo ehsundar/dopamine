@@ -10,7 +10,8 @@ type Item struct {
 	ID        int       `db:"id"`
 	CreatedAt time.Time `db:"created_at"`
 
-	Contents map[string]any `db:"contents"`
+	Contents    string         `db:"contents"`
+	ContentsMap map[string]any `db:"-"`
 }
 
 func (i *Item) ToJSON(includeMeta bool) ([]byte, error) {
@@ -22,7 +23,7 @@ func (i *Item) ToJSON(includeMeta bool) ([]byte, error) {
 func (i *Item) ToMap(includeMeta bool) map[string]any {
 	m := make(map[string]any)
 
-	for k, v := range i.Contents {
+	for k, v := range i.ContentsMap {
 		m[k] = v
 	}
 
@@ -31,6 +32,17 @@ func (i *Item) ToMap(includeMeta bool) map[string]any {
 		m["created_at"] = i.CreatedAt
 	}
 	return m
+}
+
+func (i *Item) LoadContentsMap(includeMeta bool) error {
+	err := json.Unmarshal([]byte(i.Contents), &i.ContentsMap)
+
+	if includeMeta && err == nil {
+		i.ContentsMap["id"] = i.ID
+		i.ContentsMap["created_at"] = i.CreatedAt
+	}
+
+	return err
 }
 
 func ItemFromJSON(j []byte) (*Item, error) {
@@ -45,7 +57,7 @@ func ItemFromJSON(j []byte) (*Item, error) {
 	delete(m, "id")
 	delete(m, "created_at")
 
-	i.Contents = m
+	i.ContentsMap = m
 	return &i, nil
 }
 

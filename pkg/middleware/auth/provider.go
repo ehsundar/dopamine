@@ -2,7 +2,7 @@ package auth
 
 import (
 	"context"
-	"github.com/ehsundar/dopamine/internal/auth/token"
+	"github.com/ehsundar/dopamine/api/auth/token"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
