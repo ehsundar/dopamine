@@ -28,29 +28,9 @@ func NewSqliteStorage(dsn string) Storage {
 }
 
 func (s *sqlite) GetAll(ctx context.Context, table string) ([]*Item, error) {
-	query := getQuery("items/retrieve-many", table)
-	rows, err := s.db.QueryContext(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-
-	var items []*Item
-	for rows.Next() {
-		i := Item{}
-		err = rows.Scan(&i.ID, &i.Contents, &i.CreatedAt)
-		if err != nil {
-			return nil, err
-		}
-
-		err = i.LoadContentsMap(false)
-		if err != nil {
-			return nil, err
-		}
-
-		items = append(items, &i)
-	}
-
-	return items, nil
+	return s.QueryMany(ctx, table, func(dataset *goqu.SelectDataset) *goqu.SelectDataset {
+		return dataset
+	})
 }
 
 func (s *sqlite) GetOne(ctx context.Context, table string, id int) (*Item, error) {
