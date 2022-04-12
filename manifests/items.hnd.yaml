@@ -1,0 +1,41 @@
+apiVersion: dopamine/v1
+kind: Handler
+metadata:
+  name: items-list
+spec:
+  table: items
+  priority: 1000
+  methods: [GET]
+  route: /api/items/
+  params:
+  - name: order_by
+    type: string
+    values: [id, username]
+    default: id
+  - name: descending
+    type: bool
+    default: false
+  response:
+    serializer: item
+    many: true
+    statusCode: 200
+    pagination:
+      pageSizes: [5, 10]
+---
+apiVersion: dopamine/v1
+kind: Handler
+metadata:
+  name: items-create
+spec:
+  table: items
+  priority: 1000
+  methods: [POST]
+  route: /api/items/
+  request:
+    parser: item
+    many: false
+  response:
+    serializer: item
+    many: false
+    statusCode: 201
+---

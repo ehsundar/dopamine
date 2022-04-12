@@ -1,0 +1,15 @@
+apiVersion: dopamine/v1
+kind: Parser
+metadata:
+  name: item
+spec:
+  fields:
+  - name: id
+    type: integer
+    columnRef: items.id
+  - name: username
+    type: string
+    columnRef: items.username
+  - name: password
+    type: string
+    columnRef: items.password

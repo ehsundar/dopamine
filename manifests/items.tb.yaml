@@ -1,0 +1,15 @@
+apiVersion: dopamine/v1
+kind: Table
+metadata:
+  name: items
+spec:
+  columns:
+  - name: id
+    type: integer
+    primaryKey: true
+  - name: username
+    type: "varchar(40)"
+    required: true
+  - name: password
+    type: varchar(260)
+    required: true

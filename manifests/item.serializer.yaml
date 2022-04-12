@@ -1,0 +1,12 @@
+apiVersion: dopamine/v1
+kind: Serializer
+metadata:
+  name: item
+spec:
+  fields:
+  - name: id
+    type: integer
+    columnRef: items.id
+  - name: username
+    type: string
+    columnRef: items.username
